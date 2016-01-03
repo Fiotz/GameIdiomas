@@ -1,12 +1,18 @@
 package br.edu.ufabc.iniciacaocientifica;
 
+import com.badlogic.gdx.Application.ApplicationType;
+import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Files.FileType;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+import br.edu.ufabc.iniciacaocientifica.screen.IdiomasScreen;
+import br.edu.ufabc.iniciacaocientifica.screen.Screen_Inicial;
 
 public class JogoDosIdiomas extends Game {
 	SpriteBatch batch;
@@ -15,19 +21,44 @@ public class JogoDosIdiomas extends Game {
 	
 	@Override
 	public void create () {
-		music = Gdx.audio.newMusic(Gdx.files.getFileHandle("BandaDoMarMaisNinguemS.mp3", FileType.Internal));
-		music.setLooping(true);
-		music.play();
-		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		setScreen(new Screen_Inicial(this));
+		
+		Gdx.input.setInputProcessor(new InputAdapter() {
+			@Override
+			public boolean keyUp (int keycode) {
+				if (keycode == Keys.ENTER && Gdx.app.getType() == ApplicationType.WebGL) {
+					if (!Gdx.graphics.isFullscreen()) Gdx.graphics.setDisplayMode(Gdx.graphics.getDisplayModes()[0]);
+				}
+				return true;
+			}
+		});
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+		IdiomasScreen currentScreen = getScreen();
+		
+		currentScreen.render(Gdx.graphics.getDeltaTime());
+		
+		if (currentScreen.isDone()) {
+			// dispose the resources of the current screen
+			currentScreen.dispose();
+
+			// if the current screen is a main menu screen we switch to
+			// the game loop
+			if (currentScreen instanceof Screen_Inicial) {
+				setScreen(new Screen_Inicial(this));
+			}else{
+				//setScreen(new Screen_Inicial(this));
+			}
+		}
+
+		
 	}
+	
+	@Override
+	public IdiomasScreen getScreen () {
+		return (IdiomasScreen)super.getScreen();
+	}
+	
 }
